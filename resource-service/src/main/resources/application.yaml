@@ -1,0 +1,11 @@
+spring:
+  application.name: resource-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/resource-db
+    username: postgres
+    password: postgres
+  jpa:
+    hibernate:
+      ddl-auto: update
+server:
+  port: 8080
