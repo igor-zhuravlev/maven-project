@@ -25,6 +25,9 @@ services:
     build: ./resource-service
     ports:
       - "8080:8080"
+    depends_on:
+      - resource-db
+      - song-service
     environment:
       SPRING_DATASOURCE_URL: ${RESOURCE_DB_URL}
       SPRING_DATASOURCE_USERNAME: ${RESOURCE_DB_USER}
@@ -34,7 +37,9 @@ services:
   song-service:
     build: ./song-service
     ports:
-      - "8081:8080"
+      - "8081:8081"
+    depends_on:
+      - song-db
     environment:
       SPRING_DATASOURCE_URL: ${SONG_DB_URL}
       SPRING_DATASOURCE_USERNAME: ${SONG_DB_USER}
