@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS song (
+    id INTEGER PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    artist VARCHAR(100) NOT NULL,
+    album VARCHAR(100) NOT NULL,
+    duration VARCHAR NOT NULL,
+    year VARCHAR NOT NULL
+);
