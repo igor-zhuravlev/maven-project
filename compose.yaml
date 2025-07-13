@@ -24,23 +24,46 @@ services:
   resource-service:
     build: ./resource-service
     ports:
-      - "8080:8080"
+      - "8081:8081"
     depends_on:
       - resource-db
       - song-service
+      - eureka-server
     environment:
       SPRING_DATASOURCE_URL: ${RESOURCE_DB_URL}
       SPRING_DATASOURCE_USERNAME: ${RESOURCE_DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${RESOURCE_DB_PASSWORD}
-      SONG_SERVICE_URL: ${SONG_SERVICE_URL}
+      EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
+      GATEWAY_SERVER_URL: ${GATEWAY_SERVER_URL}
+      RESOURCE_SERVICE_HOSTNAME: ${RESOURCE_SERVICE_HOSTNAME}
 
   song-service:
     build: ./song-service
+    deploy:
+      replicas: 2
     ports:
-      - "8081:8081"
+      - "8083-8084:8082"
     depends_on:
       - song-db
+      - eureka-server
     environment:
       SPRING_DATASOURCE_URL: ${SONG_DB_URL}
       SPRING_DATASOURCE_USERNAME: ${SONG_DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${SONG_DB_PASSWORD}
+      EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
+      SONG_SERVICE_HOSTNAME: ${SONG_SERVICE_HOSTNAME}
+
+  eureka-server:
+    build: ./eureka-server
+    ports:
+      - "8761:8761"
+
+  gateway-server:
+    build: ./gateway-server
+    ports:
+      - "8080:8080"
+    depends_on:
+      - eureka-server
+    environment:
+      EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
+      GATEWAY_SERVER_HOSTNAME: ${GATEWAY_SERVER_HOSTNAME}

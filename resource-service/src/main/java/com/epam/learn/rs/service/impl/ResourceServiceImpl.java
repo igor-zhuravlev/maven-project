@@ -11,11 +11,11 @@ import com.epam.learn.rs.mapper.ResourceMetadataMapper;
 import com.epam.learn.rs.repository.ResourceRepository;
 import com.epam.learn.rs.service.ResourceService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
+import org.springframework.web.client.RestClient;
 
 import java.util.Arrays;
 import java.util.List;
@@ -24,12 +24,11 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class ResourceServiceImpl implements ResourceService {
 
     private final ResourceRepository resourceRepository;
     private final ResourceMetadataMapper resourceMetadataMapper;
-    private final WebClient.Builder webClientBuilder;
+    private final RestClient restClient;
 
     @Transactional
     @Override
@@ -38,16 +37,15 @@ public class ResourceServiceImpl implements ResourceService {
         Resource saved = resourceRepository.save(resource);
 
         MetadataDto metadataDto = resourceMetadataMapper.mapToMetadataDto(saved.getId(), data);
-        webClientBuilder.build()
-            .post()
-            .uri("/songs")
-            .bodyValue(metadataDto)
+        ResponseEntity<String> response = restClient.post()
+            .uri("/song-service/songs")
+            .body(metadataDto)
             .retrieve()
-            .onStatus(status -> !status.is2xxSuccessful(), response -> response
-                .bodyToMono(String.class)
-                .flatMap(body -> Mono.error(new SongServiceException(body))))
-            .toBodilessEntity()
-            .block();
+            .toEntity(String.class);
+
+        if (response.getStatusCode() != HttpStatus.OK) {
+            throw new SongServiceException(response.getBody());
+        }
 
         return new ResourceResponseDto(saved.getId());
     }
@@ -73,18 +71,17 @@ public class ResourceServiceImpl implements ResourceService {
             .map(Resource::getId)
             .toList();
 
-        webClientBuilder.build()
-            .delete()
+        ResponseEntity<String> response = restClient.delete()
             .uri(uriBuilder -> uriBuilder
-                .path("/songs")
+                .path("/song-service/songs")
                 .queryParam("id", dto.getId())
                 .build())
             .retrieve()
-            .onStatus(status -> !status.is2xxSuccessful(), response -> response
-                .bodyToMono(String.class)
-                .flatMap(body -> Mono.error(new RuntimeException(body))))
-            .toBodilessEntity()
-            .block();
+            .toEntity(String.class);
+
+        if (response.getStatusCode() != HttpStatus.OK) {
+            throw new SongServiceException(response.getBody());
+        }
 
         resourceRepository.deleteAllById(existingIds);
         return existingIds;

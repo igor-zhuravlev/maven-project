@@ -1,8 +1,21 @@
 spring:
-  application.name: resource-service
+  application:
+    name: resource-service
   datasource:
     url: "${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/resource_db}"
     username: "${SPRING_DATASOURCE_USERNAME:postgres}"
     password: "${SPRING_DATASOURCE_PASSWORD:postgres}"
 server:
-  port: 8080
+  port: 8081
+eureka:
+  client:
+    service-url:
+      defaultZone: "${EUREKA_SERVER_URL:http://localhost:8761/eureka}"
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    hostname: "${RESOURCE_SERVICE_HOSTNAME:localhost}"
+logging:
+  level:
+    com.epam.learn.rs: info
+    org.springframework: info
