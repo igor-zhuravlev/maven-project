@@ -1,0 +1,37 @@
+spring:
+  application:
+    name: gateway-server
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          lower-case-service-id: true
+      routes:
+        - id: resource-service
+          uri: lb://resource-service
+          predicates:
+            - Path=/resources/**
+        - id: song-service
+          uri: lb://song-service
+          predicates:
+            - Path=/songs/**
+        - id: song-service-internal
+          uri: lb://song-service
+          predicates:
+            - Path=/song-service/**
+          filters:
+            - StripPrefix=1
+server:
+  port: 8080
+eureka:
+  client:
+    service-url:
+      defaultZone: "${EUREKA_SERVER_URL:http://localhost:8761/eureka}"
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    hostname: "${GATEWAY_SERVER_HOSTNAME:localhost}"
+logging:
+  level:
+    com.epam.learn.gs: info
+    org.springframework: info
