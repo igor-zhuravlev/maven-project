@@ -3,24 +3,23 @@ spring:
     name: gateway-server
   cloud:
     gateway:
-      discovery:
-        locator:
-          lower-case-service-id: true
-      routes:
-        - id: resource-service
-          uri: lb://resource-service
-          predicates:
-            - Path=/resources/**
-        - id: song-service
-          uri: lb://song-service
-          predicates:
-            - Path=/songs/**
-        - id: song-service-internal
-          uri: lb://song-service
-          predicates:
-            - Path=/song-service/**
-          filters:
-            - StripPrefix=1
+      server:
+        webflux:
+          routes:
+            - id: resource-service
+              uri: lb://resource-service
+              predicates:
+                - Path=/resources/**
+            - id: song-service
+              uri: lb://song-service
+              predicates:
+                - Path=/songs/**
+            - id: song-service-internal
+              uri: lb://song-service
+              predicates:
+                - Path=/song-service/**
+              filters:
+                - StripPrefix=1
 server:
   port: 8080
 eureka:
@@ -35,3 +34,4 @@ logging:
   level:
     com.epam.learn.gs: info
     org.springframework: info
+    com.netflix.discovery: off

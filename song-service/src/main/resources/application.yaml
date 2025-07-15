@@ -5,6 +5,9 @@ spring:
     url: "${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/song_db}"
     username: "${SPRING_DATASOURCE_USERNAME:postgres}"
     password: "${SPRING_DATASOURCE_PASSWORD:postgres}"
+  jpa:
+    hibernate:
+      ddl-auto: validate
 server:
   port: 8082
 eureka:
@@ -14,8 +17,9 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
   instance:
-    hostname: "${SONG_SERVICE_HOSTNAME:localhost}"
+    prefer-ip-address: true
 logging:
   level:
     com.epam.learn.ss: info
     org.springframework: info
+    com.netflix.discovery: off

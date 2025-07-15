@@ -1,17 +1,11 @@
 package com.epam.learn.rs.dto;
 
-import lombok.Builder;
-import lombok.Data;
-
-@Data
-@Builder
-public class MetadataDto {
-
-    private Integer id;
-    private String name; // dc:title
-    private String artist; // xmpDM:artist
-    private String album; // xmpDM:album
-    private String duration; // xmpDM:duration in mm:ss
-    private String year; // xmpDM:releaseDate
-
+public record MetadataDto(
+    Integer id,
+    String name, // dc:title
+    String artist, // xmpDM:artist
+    String duration, // xmpDM:duration in mm:ss
+    String album, // xmpDM:album
+    String year // xmpDM:releaseDate
+) {
 }

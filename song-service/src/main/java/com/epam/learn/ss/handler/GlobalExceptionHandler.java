@@ -35,7 +35,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(SongNotFoundException.class)
     public ResponseEntity<ErrorDto> handleSongNotFound(SongNotFoundException ex) {
-        final String message = String.format("Song metadata for ID=%d not found", ex.getId());
+        final String message = "Song metadata for ID=%d not found".formatted(ex.getId());
         return ResponseEntity
             .status(HttpStatus.NOT_FOUND)
             .body(new ErrorDto(message, "404"));
@@ -43,7 +43,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(SongAlreadyExistsException.class)
     public ResponseEntity<ErrorDto> handleSongAlreadyExists(SongAlreadyExistsException ex) {
-        final String message = String.format("Metadata for resource ID=%d already exists", ex.getId());
+        final String message = "Metadata for resource ID=%d already exists".formatted(ex.getId());
         return ResponseEntity
             .status(HttpStatus.CONFLICT)
             .body(new ErrorDto(message, "409"));

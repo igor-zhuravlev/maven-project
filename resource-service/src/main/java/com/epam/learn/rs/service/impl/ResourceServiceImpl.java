@@ -11,12 +11,12 @@ import com.epam.learn.rs.mapper.ResourceMetadataMapper;
 import com.epam.learn.rs.repository.ResourceRepository;
 import com.epam.learn.rs.service.ResourceService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -28,7 +28,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     private final ResourceRepository resourceRepository;
     private final ResourceMetadataMapper resourceMetadataMapper;
-    private final RestClient restClient;
+    private final RestClient gatewayClient;
 
     @Transactional
     @Override
@@ -37,15 +37,14 @@ public class ResourceServiceImpl implements ResourceService {
         Resource saved = resourceRepository.save(resource);
 
         MetadataDto metadataDto = resourceMetadataMapper.mapToMetadataDto(saved.getId(), data);
-        ResponseEntity<String> response = restClient.post()
+        gatewayClient.post()
             .uri("/song-service/songs")
             .body(metadataDto)
             .retrieve()
-            .toEntity(String.class);
-
-        if (response.getStatusCode() != HttpStatus.OK) {
-            throw new SongServiceException(response.getBody());
-        }
+            .onStatus(HttpStatusCode::isError, (request, response) -> {
+                throw new SongServiceException(new String(response.getBody().readAllBytes(), StandardCharsets.UTF_8));
+            })
+            .toBodilessEntity();
 
         return new ResourceResponseDto(saved.getId());
     }
@@ -64,24 +63,23 @@ public class ResourceServiceImpl implements ResourceService {
     @Transactional
     @Override
     public List<Integer> deleteAllByIds(DeleteResourceRequestDto dto) {
-        Set<Integer> ids = Arrays.stream(dto.getId().split(","))
+        Set<Integer> ids = Arrays.stream(dto.id().split(","))
             .map(Integer::valueOf)
             .collect(Collectors.toSet());
         List<Integer> existingIds = resourceRepository.findAllById(ids).stream()
             .map(Resource::getId)
             .toList();
 
-        ResponseEntity<String> response = restClient.delete()
+        gatewayClient.delete()
             .uri(uriBuilder -> uriBuilder
                 .path("/song-service/songs")
-                .queryParam("id", dto.getId())
+                .queryParam("id", dto.id())
                 .build())
             .retrieve()
-            .toEntity(String.class);
-
-        if (response.getStatusCode() != HttpStatus.OK) {
-            throw new SongServiceException(response.getBody());
-        }
+            .onStatus(HttpStatusCode::isError, (request, response) -> {
+                throw new SongServiceException(new String(response.getBody().readAllBytes(), StandardCharsets.UTF_8));
+            })
+            .toBodilessEntity();
 
         resourceRepository.deleteAllById(existingIds);
         return existingIds;

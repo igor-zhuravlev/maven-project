@@ -8,13 +8,13 @@ import org.springframework.http.MediaType;
 import org.springframework.web.client.RestClient;
 
 @Configuration
-public class RestClientConfig {
+public class GatewayClientConfig {
 
     @Value("${GATEWAY_SERVER_URL:http://localhost:8080}")
     private String gatewayServerUrl;
 
     @Bean
-    public RestClient restClient() {
+    public RestClient gatewayClient() {
         return RestClient.builder()
             .baseUrl(gatewayServerUrl)
             .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)

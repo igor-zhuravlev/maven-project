@@ -14,6 +14,7 @@
 	<groupId>com.epam.learn</groupId>
 	<artifactId>gateway-server</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+
 	<name>gateway-server</name>
 
 	<properties>
@@ -24,7 +25,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-gateway</artifactId>
+			<artifactId>spring-cloud-starter-gateway-server-webflux</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>

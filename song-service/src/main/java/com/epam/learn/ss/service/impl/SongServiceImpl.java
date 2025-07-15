@@ -10,7 +10,6 @@ import com.epam.learn.ss.mapper.SongMapper;
 import com.epam.learn.ss.repository.SongRepository;
 import com.epam.learn.ss.service.SongService;
 import jakarta.validation.ConstraintViolation;
-import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -56,7 +55,7 @@ public class SongServiceImpl implements SongService {
         if (!violations.isEmpty()) {
             throw new DeleteInvalidCsvException(violations);
         }
-        Set<Integer> ids = Arrays.stream(dto.getId().split(","))
+        Set<Integer> ids = Arrays.stream(dto.id().split(","))
             .map(Integer::valueOf)
             .collect(Collectors.toSet());
         List<Integer> existingIds = songRepository.findAllById(ids).stream()

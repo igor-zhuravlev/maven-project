@@ -18,7 +18,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorDto> handleResourceNotFound(ResourceNotFoundException ex) {
-        final String message = String.format("Resource with ID=%d not found", ex.getId());
+        final String message = "Resource with ID=%d not found".formatted(ex.getId());
         return ResponseEntity
             .status(HttpStatus.NOT_FOUND)
             .body(new ErrorDto(message, "404"));
@@ -29,7 +29,7 @@ public class GlobalExceptionHandler {
         final String invalidContentType = ex.getContentType() != null
             ? ex.getContentType().toString()
             : "unknown";
-        final String message = String.format("Invalid file format: '%s'. Only MP3 files are allowed", invalidContentType);
+        final String message = "Invalid file format: '%s'. Only MP3 files are allowed".formatted(invalidContentType);
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
             .body(new ErrorDto(message, "400"));
@@ -38,7 +38,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErrorDto> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException ex) {
         final String value = ex.getValue() != null ? ex.getValue().toString() : "null";
-        final String message = String.format("Invalid value '%s' for ID. Must be a positive integer", value);
+        final String message = "Invalid value '%s' for ID. Must be a positive integer".formatted(value);
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
             .body(new ErrorDto(message, "400"));
@@ -46,7 +46,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(InvalidResourceIdException.class)
     public ResponseEntity<ErrorDto> handleInvalidResourceId(InvalidResourceIdException ex) {
-        final String message = String.format("Invalid value '%s' for ID. Must be a positive integer", ex.getValue());
+        final String message = "Invalid value '%s' for ID. Must be a positive integer".formatted(ex.getValue());
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
             .body(new ErrorDto(message, "400"));

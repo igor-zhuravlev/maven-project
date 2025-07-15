@@ -6,8 +6,6 @@ import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
 public interface SongMapper {
-
     Song toEntity(SongDto dto);
     SongDto toDto(Song entity);
-
 }

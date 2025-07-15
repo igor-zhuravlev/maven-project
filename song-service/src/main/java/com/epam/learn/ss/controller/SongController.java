@@ -26,7 +26,7 @@ public class SongController {
     private final SongService songService;
 
     @PostMapping
-    public ResponseEntity<SongDto> createSongMetadata(@RequestBody @Valid SongDto dto) {
+    public ResponseEntity<SongDto> createSongMetadata(@Valid @RequestBody SongDto dto) {
         return ResponseEntity.ok(songService.save(dto));
     }
 

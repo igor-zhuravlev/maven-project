@@ -21,16 +21,16 @@ public class ResourceMetadataMapper {
             String duration = metadata.get("xmpDM:duration");
             double durationInSec = Double.parseDouble(duration);
             long totalSeconds = Math.round(durationInSec);
-            String mmss = String.format("%02d:%02d", totalSeconds / 60, totalSeconds % 60);
+            String mmss = "%02d:%02d".formatted(totalSeconds / 60, totalSeconds % 60);
 
-            return MetadataDto.builder()
-                .id(id)
-                .name(metadata.get("dc:title"))
-                .artist(metadata.get("xmpDM:artist"))
-                .duration(mmss)
-                .album(metadata.get("xmpDM:album"))
-                .year(metadata.get("xmpDM:releaseDate"))
-                .build();
+            return new MetadataDto(
+                id,
+                metadata.get("dc:title"),
+                metadata.get("xmpDM:artist"),
+                mmss,
+                metadata.get("xmpDM:album"),
+                metadata.get("xmpDM:releaseDate")
+            );
         } catch (Exception e) {
             throw new RuntimeException("Failed to extract metadata", e);
         }

@@ -25,14 +25,16 @@ public class DeleteResourceValidator implements ConstraintValidator<DeleteResour
         }
 
         if (value.length() > maxLength) {
-            return addConstraintViolation(context, String.format(
-                "CSV string is too long: received %d characters, maximum allowed is %d", value.length(), maxLength));
+            String message =  "CSV string is too long: received %d characters, maximum allowed is %d"
+                .formatted(value.length(), maxLength);
+            return addConstraintViolation(context, message);
         }
 
         Optional<String> firstInvalid = findFirstInvalid(value);
         if (firstInvalid.isPresent()) {
-            return addConstraintViolation(context, String.format(
-                "Invalid ID format: '%s'. Only positive integers are allowed", firstInvalid.get()));
+            String message = "Invalid ID format: '%s'. Only positive integers are allowed"
+                .formatted(firstInvalid.get());
+            return addConstraintViolation(context, message);
         }
 
         return true;
