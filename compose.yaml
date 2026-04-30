@@ -46,6 +46,11 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${RESOURCE_DB_PASSWORD}
       EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
       GATEWAY_SERVER_URL: ${GATEWAY_SERVER_URL}
+      LOCALSTACK_ENDPOINT: ${LOCALSTACK_ENDPOINT}
+      AWS_REGION: ${AWS_REGION}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_RESOURCES_BUCKET: ${AWS_RESOURCES_BUCKET}
     depends_on:
       resource-db:
         condition: service_healthy
@@ -89,3 +94,13 @@ services:
     depends_on:
       - eureka-server
     restart: unless-stopped
+
+  localstack:
+    image: localstack/localstack:4
+    container_name: localstack
+    ports:
+      - "4566:4566"
+    environment:
+      SERVICES: s3
+    volumes:
+      - ./init-scripts/localstack:/etc/localstack/init/ready.d

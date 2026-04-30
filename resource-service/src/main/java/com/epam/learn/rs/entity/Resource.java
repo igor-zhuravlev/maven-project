@@ -21,7 +21,7 @@ public class Resource {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(nullable = false, columnDefinition = "BYTEA")
-    private byte[] data;
+    @Column(name = "s3_key", nullable = false, unique = true)
+    private String s3Key;
 
 }

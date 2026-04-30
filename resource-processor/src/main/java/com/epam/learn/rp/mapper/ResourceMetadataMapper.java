@@ -1,6 +1,6 @@
-package com.epam.learn.rs.mapper;
+package com.epam.learn.rp.mapper;
 
-import com.epam.learn.rs.dto.MetadataDto;
+import com.epam.learn.rp.dto.MetadataDto;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.mp3.Mp3Parser;

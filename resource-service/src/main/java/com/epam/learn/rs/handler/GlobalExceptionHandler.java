@@ -3,6 +3,7 @@ package com.epam.learn.rs.handler;
 import com.epam.learn.rs.dto.ErrorDto;
 import com.epam.learn.rs.exception.InvalidResourceIdException;
 import com.epam.learn.rs.exception.ResourceNotFoundException;
+import com.epam.learn.rs.exception.ResourceS3ServiceException;
 import com.epam.learn.rs.exception.SongServiceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -65,6 +66,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
             .body(new ErrorDto("Song service error", "400"));
+    }
+
+    @ExceptionHandler(ResourceS3ServiceException.class)
+    public ResponseEntity<ErrorDto> handleResourceS3Service(ResourceS3ServiceException ex) {
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(new ErrorDto(ex.getMessage(), "400"));
     }
 
     @ExceptionHandler(Exception.class)

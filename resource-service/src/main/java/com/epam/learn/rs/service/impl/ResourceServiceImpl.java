@@ -1,14 +1,13 @@
 package com.epam.learn.rs.service.impl;
 
 import com.epam.learn.rs.dto.DeleteResourceRequestDto;
-import com.epam.learn.rs.dto.MetadataDto;
 import com.epam.learn.rs.dto.ResourceResponseDto;
 import com.epam.learn.rs.entity.Resource;
 import com.epam.learn.rs.exception.InvalidResourceIdException;
 import com.epam.learn.rs.exception.ResourceNotFoundException;
 import com.epam.learn.rs.exception.SongServiceException;
-import com.epam.learn.rs.mapper.ResourceMetadataMapper;
 import com.epam.learn.rs.repository.ResourceRepository;
+import com.epam.learn.rs.service.ResourceS3Service;
 import com.epam.learn.rs.service.ResourceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatusCode;
@@ -26,26 +25,16 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ResourceServiceImpl implements ResourceService {
 
+    private final ResourceS3Service resourceS3Service;
     private final ResourceRepository resourceRepository;
-    private final ResourceMetadataMapper resourceMetadataMapper;
     private final RestClient gatewayClient;
 
     @Transactional
     @Override
     public ResourceResponseDto save(byte[] data) {
-        Resource resource = new Resource(null, data);
+        String key = resourceS3Service.upload(data);
+        Resource resource = new Resource(null, key);
         Resource saved = resourceRepository.save(resource);
-
-        MetadataDto metadataDto = resourceMetadataMapper.mapToMetadataDto(saved.getId(), data);
-        gatewayClient.post()
-            .uri("/song-service/songs")
-            .body(metadataDto)
-            .retrieve()
-            .onStatus(HttpStatusCode::isError, (request, response) -> {
-                throw new SongServiceException(new String(response.getBody().readAllBytes(), StandardCharsets.UTF_8));
-            })
-            .toBodilessEntity();
-
         return new ResourceResponseDto(saved.getId());
     }
 
@@ -55,9 +44,9 @@ public class ResourceServiceImpl implements ResourceService {
         if (id == null || id <= 0) {
             throw new InvalidResourceIdException(id);
         }
-        return resourceRepository.findById(id)
-            .map(Resource::getData)
+        Resource resource = resourceRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException(id));
+        return resourceS3Service.download(resource.getS3Key());
     }
 
     @Transactional
@@ -66,9 +55,7 @@ public class ResourceServiceImpl implements ResourceService {
         Set<Integer> ids = Arrays.stream(dto.id().split(","))
             .map(Integer::valueOf)
             .collect(Collectors.toSet());
-        List<Integer> existingIds = resourceRepository.findAllById(ids).stream()
-            .map(Resource::getId)
-            .toList();
+        List<Resource> existingResources = resourceRepository.findAllById(ids);
 
         gatewayClient.delete()
             .uri(uriBuilder -> uriBuilder
@@ -81,7 +68,13 @@ public class ResourceServiceImpl implements ResourceService {
             })
             .toBodilessEntity();
 
+        resourceS3Service.delete(existingResources);
+
+        List<Integer> existingIds = existingResources.stream()
+            .map(Resource::getId)
+            .toList();
         resourceRepository.deleteAllById(existingIds);
+
         return existingIds;
     }
 
