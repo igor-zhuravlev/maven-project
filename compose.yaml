@@ -46,6 +46,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${RESOURCE_DB_PASSWORD}
       EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
       GATEWAY_SERVER_URL: ${GATEWAY_SERVER_URL}
+      RABBITMQ_HOSTNAME: ${RABBITMQ_HOSTNAME}
       LOCALSTACK_ENDPOINT: ${LOCALSTACK_ENDPOINT}
       AWS_REGION: ${AWS_REGION}
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
@@ -53,6 +54,8 @@ services:
       AWS_RESOURCES_BUCKET: ${AWS_RESOURCES_BUCKET}
     depends_on:
       resource-db:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
       song-service:
         condition: service_started
@@ -97,10 +100,33 @@ services:
 
   localstack:
     image: localstack/localstack:4
-    container_name: localstack
     ports:
       - "4566:4566"
     environment:
       SERVICES: s3
     volumes:
       - ./init-scripts/localstack:/etc/localstack/init/ready.d
+
+  resource-processor:
+    build: ./resource-processor
+    environment:
+      GATEWAY_SERVER_URL: ${GATEWAY_SERVER_URL}
+      RABBITMQ_HOSTNAME: ${RABBITMQ_HOSTNAME}
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      resource-service:
+        condition: service_started
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:4-management-alpine
+    ports:
+      - "5672:5672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 2s
+      retries: 10
+      start_period: 5s
+    restart: unless-stopped

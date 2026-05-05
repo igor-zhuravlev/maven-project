@@ -8,6 +8,9 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
+  rabbitmq:
+    host: "${RABBITMQ_HOSTNAME:localhost}"
+    port: 5672
 server:
   port: 8081
 eureka:
