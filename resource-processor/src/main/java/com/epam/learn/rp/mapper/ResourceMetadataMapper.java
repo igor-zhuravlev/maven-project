@@ -27,8 +27,8 @@ public class ResourceMetadataMapper {
                 id,
                 metadata.get("dc:title"),
                 metadata.get("xmpDM:artist"),
-                mmss,
                 metadata.get("xmpDM:album"),
+                mmss,
                 metadata.get("xmpDM:releaseDate")
             );
         } catch (Exception e) {
