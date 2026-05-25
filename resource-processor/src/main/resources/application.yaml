@@ -26,6 +26,11 @@ app:
     max-interval: 10000
 server:
   port: 8084
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
 logging:
   level:
     com.epam.learn.rp: info

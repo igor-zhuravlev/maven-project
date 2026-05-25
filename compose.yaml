@@ -10,6 +10,12 @@ services:
       POSTGRES_PASSWORD: ${RESOURCE_DB_PASSWORD}
     volumes:
       - ./init-scripts/resource-db:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 2s
+      retries: 10
+      start_period: 5s
     restart: unless-stopped
 
   song-db:
@@ -22,6 +28,12 @@ services:
       POSTGRES_PASSWORD: ${SONG_DB_PASSWORD}
     volumes:
       - ./init-scripts/song-db:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 2s
+      retries: 10
+      start_period: 5s
     restart: unless-stopped
 
   resource-service:
@@ -40,6 +52,23 @@ services:
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
       AWS_RESOURCES_BUCKET: ${AWS_RESOURCES_BUCKET}
+    depends_on:
+      resource-db:
+        condition: service_healthy
+      localstack:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      song-service:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8081/actuator/health/readiness"]
+      interval: 5s
+      timeout: 2s
+      retries: 10
+      start_period: 10s
     restart: unless-stopped
 
   song-service:
@@ -53,12 +82,29 @@ services:
       SPRING_DATASOURCE_USERNAME: ${SONG_DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${SONG_DB_PASSWORD}
       EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
+    depends_on:
+      song-db:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8082/actuator/health/readiness"]
+      interval: 5s
+      timeout: 2s
+      retries: 10
+      start_period: 10s
     restart: unless-stopped
 
   eureka-server:
     build: ./eureka-server
     ports:
       - "8761:8761"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8761/actuator/health/readiness"]
+      interval: 5s
+      timeout: 2s
+      retries: 10
+      start_period: 5s
     restart: unless-stopped
 
   gateway-server:
@@ -68,6 +114,14 @@ services:
     environment:
       EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
       GATEWAY_SERVER_HOSTNAME: ${GATEWAY_SERVER_HOSTNAME}
+    depends_on:
+      - eureka-server
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/actuator/health/readiness"]
+      interval: 5s
+      timeout: 2s
+      retries: 10
+      start_period: 5s
     restart: unless-stopped
 
   localstack:
@@ -78,6 +132,12 @@ services:
       SERVICES: s3
     volumes:
       - ./init-scripts/localstack:/etc/localstack/init/ready.d
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 5s
+      timeout: 2s
+      retries: 10
+      start_period: 5s
     restart: unless-stopped
 
   resource-processor:
@@ -85,6 +145,19 @@ services:
     environment:
       GATEWAY_SERVER_URL: ${GATEWAY_SERVER_URL}
       RABBITMQ_HOSTNAME: ${RABBITMQ_HOSTNAME}
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      resource-service:
+        condition: service_healthy
+      song-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8084/actuator/health/readiness"]
+      interval: 5s
+      timeout: 2s
+      retries: 10
+      start_period: 10s
     restart: unless-stopped
 
   rabbitmq:
@@ -92,4 +165,10 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 2s
+      retries: 15
+      start_period: 10s
     restart: unless-stopped
