@@ -21,6 +21,8 @@
 		<java.version>21</java.version>
 		<mapstruct.version>1.6.3</mapstruct.version>
 		<spring-cloud.version>2025.0.0</spring-cloud.version>
+		<!-- Docker Java client API version -->
+		<docker.api.version>1.54</docker.api.version>
 		<spock.version>2.4-groovy-5.0</spock.version>
 		<groovy.version>5.0.3</groovy.version>
 		<gmavenplus.version>4.3.1</gmavenplus.version>
@@ -91,6 +93,16 @@
 			<version>${groovy.version}</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>postgresql</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<dependencyManagement>
@@ -150,6 +162,15 @@
 						</goals>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<systemPropertyVariables>
+						<api.version>${docker.api.version}</api.version>
+					</systemPropertyVariables>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.springframework.cloud</groupId>

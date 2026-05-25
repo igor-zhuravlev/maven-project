@@ -16,7 +16,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class ResourceUploadSteps {
 
-    private static final String GATEWAY_URL = "http://localhost:8080";
+    private static final String GATEWAY_URL =
+        System.getenv().getOrDefault("GATEWAY_URL", "http://localhost:8080");
 
     private byte[] mp3File;
     private int resourceId;
