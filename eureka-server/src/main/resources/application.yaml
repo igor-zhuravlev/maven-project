@@ -16,3 +16,5 @@ logging:
   level:
     com.epam.learn.es: info
     org.springframework: info
+    com.netflix.eureka: off
+    com.netflix.discovery: off

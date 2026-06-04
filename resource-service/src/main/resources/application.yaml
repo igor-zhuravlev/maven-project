@@ -11,6 +11,8 @@ spring:
   rabbitmq:
     host: "${RABBITMQ_HOSTNAME:localhost}"
     port: 5672
+    username: "${RABBITMQ_USERNAME:guest}"
+    password: "${RABBITMQ_PASSWORD:guest}"
 server:
   port: 8081
 eureka:
@@ -22,6 +24,8 @@ eureka:
   instance:
     prefer-ip-address: true
 app:
+  services:
+    song-service-url: "${SONG_SERVICE_URL:http://song-service}"
   s3:
     endpoint: "${LOCALSTACK_ENDPOINT:http://localhost:4566}"
     region: "${AWS_REGION:us-east-1}"
@@ -37,4 +41,5 @@ logging:
   level:
     com.epam.learn.rs: info
     org.springframework: info
+    com.netflix.eureka: off
     com.netflix.discovery: off

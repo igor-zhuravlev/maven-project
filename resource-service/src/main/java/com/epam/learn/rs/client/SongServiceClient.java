@@ -12,11 +12,15 @@ import java.nio.charset.StandardCharsets;
 @RequiredArgsConstructor
 public class SongServiceClient {
 
-    private final RestClient gatewayClient;
+    private final RestClient songClient;
 
     public void deleteSongsByIds(final String ids) {
-        gatewayClient.delete()
-            .uri("/song-service/songs/{id}", ids)
+        songClient.delete()
+            .uri(uriBuilder -> uriBuilder
+                .path("/songs")
+                .queryParam("id", ids)
+                .build()
+            )
             .retrieve()
             .onStatus(HttpStatusCode::isError, (request, response) -> {
                 throw new SongServiceException(

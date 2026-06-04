@@ -16,7 +16,7 @@ import java.nio.charset.StandardCharsets;
 @RequiredArgsConstructor
 public class SongServiceClient {
 
-    private final RestClient gatewayClient;
+    private final RestClient songClient;
 
     @Retryable(
         retryFor = {ResourceAccessException.class, SongServiceClientException.class},
@@ -28,7 +28,7 @@ public class SongServiceClient {
         )
     )
     public void createSong(final MetadataDto metadataDto) {
-        gatewayClient.post()
+        songClient.post()
             .uri("/songs")
             .body(metadataDto)
             .retrieve()

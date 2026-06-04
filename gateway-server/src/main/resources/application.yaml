@@ -14,18 +14,6 @@ spring:
               uri: lb://song-service
               predicates:
                 - Path=/songs/**
-            - id: resource-service-internal
-              uri: lb://resource-service
-              predicates:
-                - Path=/resource-service/**
-              filters:
-                - StripPrefix=1
-            - id: song-service-internal
-              uri: lb://song-service
-              predicates:
-                - Path=/song-service/**
-              filters:
-                - StripPrefix=1
 server:
   port: 8080
 eureka:
@@ -45,4 +33,5 @@ logging:
   level:
     com.epam.learn.gs: info
     org.springframework: info
+    com.netflix.eureka: off
     com.netflix.discovery: off

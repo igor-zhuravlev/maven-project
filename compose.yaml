@@ -45,7 +45,7 @@ services:
       SPRING_DATASOURCE_USERNAME: ${RESOURCE_DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${RESOURCE_DB_PASSWORD}
       EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
-      GATEWAY_SERVER_URL: ${GATEWAY_SERVER_URL}
+      SONG_SERVICE_URL: ${SONG_SERVICE_URL}
       RABBITMQ_HOSTNAME: ${RABBITMQ_HOSTNAME}
       LOCALSTACK_ENDPOINT: ${LOCALSTACK_ENDPOINT}
       AWS_REGION: ${AWS_REGION}
@@ -115,7 +115,8 @@ services:
       EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
       GATEWAY_SERVER_HOSTNAME: ${GATEWAY_SERVER_HOSTNAME}
     depends_on:
-      - eureka-server
+      eureka-server:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/actuator/health/readiness"]
       interval: 5s
@@ -142,9 +143,13 @@ services:
 
   resource-processor:
     build: ./resource-processor
+    ports:
+      - "8084:8084"
     environment:
-      GATEWAY_SERVER_URL: ${GATEWAY_SERVER_URL}
+      RESOURCE_SERVICE_URL: ${RESOURCE_SERVICE_URL}
+      SONG_SERVICE_URL: ${SONG_SERVICE_URL}
       RABBITMQ_HOSTNAME: ${RABBITMQ_HOSTNAME}
+      EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
     depends_on:
       rabbitmq:
         condition: service_healthy

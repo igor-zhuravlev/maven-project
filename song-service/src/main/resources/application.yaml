@@ -27,4 +27,5 @@ logging:
   level:
     com.epam.learn.ss: info
     org.springframework: info
+    com.netflix.eureka: off
     com.netflix.discovery: off
