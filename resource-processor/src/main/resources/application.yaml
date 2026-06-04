@@ -1,52 +1,5 @@
 spring:
   application:
     name: resource-processor
-  rabbitmq:
-    host: "${RABBITMQ_HOSTNAME:localhost}"
-    port: 5672
-    username: "${RABBITMQ_USERNAME:guest}"
-    password: "${RABBITMQ_PASSWORD:guest}"
-  cloud:
-    function:
-      definition: resourceUploadedEventConsumer
-    stream:
-      bindings:
-        resourceUploadedEventConsumer-in-0:
-          destination: resources.exchange
-          group: resources.resource.uploaded.queue
-      rabbit:
-        bindings:
-          resourceUploadedEventConsumer-in-0:
-            consumer:
-              bindingRoutingKey: resources.resource.uploaded
-              queueNameGroupOnly: true
-app:
-  services:
-    resource-service-url: "${RESOURCE_SERVICE_URL:http://resource-service}"
-    song-service-url: "${SONG_SERVICE_URL:http://song-service}"
-  retry:
-    max-attempts: 5
-    initial-interval: 1000
-    multiplier: 2.0
-    max-interval: 10000
-server:
-  port: 8084
-eureka:
-  client:
-    service-url:
-      defaultZone: "${EUREKA_SERVER_URL:http://localhost:8761/eureka}"
-    register-with-eureka: true
-    fetch-registry: true
-  instance:
-    prefer-ip-address: true
-management:
-  endpoint:
-    health:
-      probes:
-        enabled: true
-logging:
-  level:
-    com.epam.learn.rp: info
-    org.springframework: info
-    com.netflix.eureka: off
-    com.netflix.discovery: off
+  config:
+    import: configserver:${CONFIG_SERVER_URL:http://localhost:8888}

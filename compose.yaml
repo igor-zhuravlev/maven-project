@@ -44,6 +44,7 @@ services:
       SPRING_DATASOURCE_URL: ${RESOURCE_DB_URL}
       SPRING_DATASOURCE_USERNAME: ${RESOURCE_DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${RESOURCE_DB_PASSWORD}
+      CONFIG_SERVER_URL: ${CONFIG_SERVER_URL}
       EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
       SONG_SERVICE_URL: ${SONG_SERVICE_URL}
       RABBITMQ_HOSTNAME: ${RABBITMQ_HOSTNAME}
@@ -53,6 +54,8 @@ services:
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
       AWS_RESOURCES_BUCKET: ${AWS_RESOURCES_BUCKET}
     depends_on:
+      config-server:
+        condition: service_healthy
       resource-db:
         condition: service_healthy
       localstack:
@@ -81,8 +84,11 @@ services:
       SPRING_DATASOURCE_URL: ${SONG_DB_URL}
       SPRING_DATASOURCE_USERNAME: ${SONG_DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${SONG_DB_PASSWORD}
+      CONFIG_SERVER_URL: ${CONFIG_SERVER_URL}
       EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
     depends_on:
+      config-server:
+        condition: service_healthy
       song-db:
         condition: service_healthy
       eureka-server:
@@ -95,10 +101,31 @@ services:
       start_period: 10s
     restart: unless-stopped
 
+  config-server:
+    build: ./config-server
+    ports:
+      - "8888:8888"
+    environment:
+      CONFIG_REPO_URI: ${CONFIG_REPO_URI}
+      CONFIG_REPO_BRANCH: ${CONFIG_REPO_BRANCH}
+      EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8888/actuator/health/readiness"]
+      interval: 5s
+      timeout: 2s
+      retries: 10
+      start_period: 5s
+    restart: unless-stopped
+
   eureka-server:
     build: ./eureka-server
     ports:
       - "8761:8761"
+    environment:
+      CONFIG_SERVER_URL: ${CONFIG_SERVER_URL}
+    depends_on:
+      config-server:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:8761/actuator/health/readiness"]
       interval: 5s
@@ -112,9 +139,12 @@ services:
     ports:
       - "8080:8080"
     environment:
+      CONFIG_SERVER_URL: ${CONFIG_SERVER_URL}
       EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
       GATEWAY_SERVER_HOSTNAME: ${GATEWAY_SERVER_HOSTNAME}
     depends_on:
+      config-server:
+        condition: service_healthy
       eureka-server:
         condition: service_healthy
     healthcheck:
@@ -149,8 +179,11 @@ services:
       RESOURCE_SERVICE_URL: ${RESOURCE_SERVICE_URL}
       SONG_SERVICE_URL: ${SONG_SERVICE_URL}
       RABBITMQ_HOSTNAME: ${RABBITMQ_HOSTNAME}
+      CONFIG_SERVER_URL: ${CONFIG_SERVER_URL}
       EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
     depends_on:
+      config-server:
+        condition: service_healthy
       rabbitmq:
         condition: service_healthy
       resource-service:
