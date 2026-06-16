@@ -9,4 +9,5 @@ public interface ResourceService {
     ResourceResponseDto save(byte[] data);
     byte[] findById(Integer id);
     List<Integer> deleteAllByIds(DeleteResourceRequestDto dto);
+    void updateToProcessed(Integer resourceId);
 }

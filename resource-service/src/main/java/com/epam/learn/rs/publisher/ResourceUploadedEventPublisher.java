@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class ResourceEventPublisher {
+public class ResourceUploadedEventPublisher {
 
     private final RabbitTemplate rabbitTemplate;
 

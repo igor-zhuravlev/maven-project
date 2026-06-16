@@ -1,12 +1,15 @@
 package com.epam.learn.rs.service.impl;
 
 import com.epam.learn.rs.client.SongServiceClient;
+import com.epam.learn.rs.client.StorageServiceClient;
 import com.epam.learn.rs.dto.DeleteResourceRequestDto;
 import com.epam.learn.rs.dto.ResourceResponseDto;
+import com.epam.learn.rs.dto.StorageDto;
 import com.epam.learn.rs.entity.Resource;
+import com.epam.learn.rs.entity.StorageType;
 import com.epam.learn.rs.exception.InvalidResourceIdException;
 import com.epam.learn.rs.exception.ResourceNotFoundException;
-import com.epam.learn.rs.publisher.ResourceEventPublisher;
+import com.epam.learn.rs.publisher.ResourceUploadedEventPublisher;
 import com.epam.learn.rs.repository.ResourceRepository;
 import com.epam.learn.rs.service.ResourceS3Service;
 import com.epam.learn.rs.service.ResourceService;
@@ -25,16 +28,18 @@ public class ResourceServiceImpl implements ResourceService {
 
     private final ResourceS3Service resourceS3Service;
     private final ResourceRepository resourceRepository;
-    private final ResourceEventPublisher resourceEventPublisher;
+    private final ResourceUploadedEventPublisher resourceUploadedEventPublisher;
+    private final StorageServiceClient storageServiceClient;
     private final SongServiceClient songServiceClient;
 
     @Transactional
     @Override
     public ResourceResponseDto save(byte[] data) {
-        String key = resourceS3Service.upload(data);
-        Resource resource = new Resource(null, key);
+        StorageDto staging = storageServiceClient.getStorage(StorageType.STAGING);
+        String key = resourceS3Service.upload(data, staging.bucket(), staging.path());
+        Resource resource = new Resource(null, StorageType.STAGING, staging.bucket(), key);
         Resource saved = resourceRepository.save(resource);
-        resourceEventPublisher.publishResourceUploaded(saved.getId());
+        resourceUploadedEventPublisher.publishResourceUploaded(saved.getId());
         return new ResourceResponseDto(saved.getId());
     }
 
@@ -46,7 +51,7 @@ public class ResourceServiceImpl implements ResourceService {
         }
         Resource resource = resourceRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException(id));
-        return resourceS3Service.download(resource.getS3Key());
+        return resourceS3Service.download(resource.getBucket(), resource.getS3Key());
     }
 
     @Transactional
@@ -66,6 +71,26 @@ public class ResourceServiceImpl implements ResourceService {
         resourceRepository.deleteAllById(existingIds);
 
         return existingIds;
+    }
+
+    @Transactional
+    @Override
+    public void updateToProcessed(Integer resourceId) {
+        Resource resource = resourceRepository.findById(resourceId)
+            .orElseThrow(() -> new ResourceNotFoundException(resourceId));
+
+        if (resource.getStorageType() == StorageType.PERMANENT) {
+            return;
+        }
+
+        StorageDto permanent = storageServiceClient.getStorage(StorageType.PERMANENT);
+        String key = resourceS3Service.move(resource, permanent.bucket(), permanent.path());
+
+        resource.setStorageType(StorageType.PERMANENT);
+        resource.setBucket(permanent.bucket());
+        resource.setS3Key(key);
+
+        resourceRepository.save(resource);
     }
 
 }
