@@ -122,7 +122,7 @@ services:
       interval: 5s
       timeout: 2s
       retries: 20
-      start_period: 30s
+      start_period: 35s
     restart: unless-stopped
 
   storage-service:
@@ -136,6 +136,8 @@ services:
       CONFIG_SERVER_URL: ${CONFIG_SERVER_URL}
       EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
       LOG_FILE: ${STORAGE_SERVICE_LOG_FILE}
+      IDP_ISSUER_URI: ${IDP_ISSUER_URI}
+      IDP_JWK_SET_URI: ${IDP_JWK_SET_URI}
     volumes:
       - ms-logs:/logs
     depends_on:
@@ -145,6 +147,8 @@ services:
         condition: service_healthy
       eureka-server:
         condition: service_healthy
+      keycloak:
+        condition: service_started
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:8084/actuator/health/readiness"]
       interval: 5s
@@ -198,8 +202,8 @@ services:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:8888/actuator/health/readiness"]
       interval: 5s
       timeout: 2s
-      retries: 10
-      start_period: 5s
+      retries: 15
+      start_period: 10s
     restart: unless-stopped
 
   eureka-server:
@@ -272,7 +276,7 @@ services:
       interval: 5s
       timeout: 2s
       retries: 20
-      start_period: 20s
+      start_period: 30s
     restart: unless-stopped
 
   elasticsearch:
@@ -332,6 +336,19 @@ services:
         condition: service_started
       elasticsearch:
         condition: service_started
+    restart: unless-stopped
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.6
+    mem_limit: 1GB
+    command: ["start-dev", "--import-realm"]
+    ports:
+      - "8088:8080"
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_BOOTSTRAP_ADMIN_USERNAME}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_BOOTSTRAP_ADMIN_PASSWORD}
+    volumes:
+      - ./keycloak:/opt/keycloak/data/import:ro
     restart: unless-stopped
 
 volumes:
