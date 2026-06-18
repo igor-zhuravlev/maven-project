@@ -55,20 +55,28 @@ services:
     depends_on:
       resource-db:
         condition: service_healthy
+      localstack:
+        condition: service_healthy
       rabbitmq:
         condition: service_healthy
       song-service:
-        condition: service_started
+        condition: service_healthy
       eureka-server:
-        condition: service_started
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8081/actuator/health/readiness"]
+      interval: 5s
+      timeout: 2s
+      retries: 10
+      start_period: 10s
     restart: unless-stopped
 
   song-service:
     build: ./song-service
-    deploy:
-      replicas: 2
     ports:
       - "8082-8083:8082"
+    deploy:
+      replicas: 2
     environment:
       SPRING_DATASOURCE_URL: ${SONG_DB_URL}
       SPRING_DATASOURCE_USERNAME: ${SONG_DB_USER}
@@ -78,13 +86,25 @@ services:
       song-db:
         condition: service_healthy
       eureka-server:
-        condition: service_started
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8082/actuator/health/readiness"]
+      interval: 5s
+      timeout: 2s
+      retries: 10
+      start_period: 10s
     restart: unless-stopped
 
   eureka-server:
     build: ./eureka-server
     ports:
       - "8761:8761"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8761/actuator/health/readiness"]
+      interval: 5s
+      timeout: 2s
+      retries: 10
+      start_period: 5s
     restart: unless-stopped
 
   gateway-server:
@@ -96,6 +116,12 @@ services:
       GATEWAY_SERVER_HOSTNAME: ${GATEWAY_SERVER_HOSTNAME}
     depends_on:
       - eureka-server
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/actuator/health/readiness"]
+      interval: 5s
+      timeout: 2s
+      retries: 10
+      start_period: 5s
     restart: unless-stopped
 
   localstack:
@@ -106,6 +132,12 @@ services:
       SERVICES: s3
     volumes:
       - ./init-scripts/localstack:/etc/localstack/init/ready.d
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 5s
+      timeout: 2s
+      retries: 10
+      start_period: 5s
     restart: unless-stopped
 
   resource-processor:
@@ -117,13 +149,22 @@ services:
       rabbitmq:
         condition: service_healthy
       resource-service:
-        condition: service_started
+        condition: service_healthy
+      song-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8084/actuator/health/readiness"]
+      interval: 5s
+      timeout: 2s
+      retries: 10
+      start_period: 10s
     restart: unless-stopped
 
   rabbitmq:
     image: rabbitmq:4-management-alpine
     ports:
       - "5672:5672"
+      - "15672:15672"
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 5s

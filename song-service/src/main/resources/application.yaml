@@ -18,6 +18,11 @@ eureka:
     fetch-registry: true
   instance:
     prefer-ip-address: true
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
 logging:
   level:
     com.epam.learn.ss: info

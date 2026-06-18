@@ -36,6 +36,11 @@ eureka:
     fetch-registry: true
   instance:
     hostname: "${GATEWAY_SERVER_HOSTNAME:localhost}"
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
 logging:
   level:
     com.epam.learn.gs: info
