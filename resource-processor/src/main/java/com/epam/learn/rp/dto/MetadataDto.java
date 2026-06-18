@@ -1,4 +1,4 @@
-package com.epam.learn.rs.dto;
+package com.epam.learn.rp.dto;
 
 public record MetadataDto(
     Integer id,

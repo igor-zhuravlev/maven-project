@@ -18,6 +18,13 @@ eureka:
     fetch-registry: true
   instance:
     prefer-ip-address: true
+app:
+  s3:
+    endpoint: "${LOCALSTACK_ENDPOINT:http://localhost:4566}"
+    region: "${AWS_REGION:us-east-1}"
+    access-key: "${AWS_ACCESS_KEY_ID:test}"
+    secret-key: "${AWS_SECRET_ACCESS_KEY:test}"
+    bucket: "${AWS_RESOURCES_BUCKET:resources}"
 logging:
   level:
     com.epam.learn.rs: info
