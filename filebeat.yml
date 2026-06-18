@@ -1,0 +1,15 @@
+filebeat.inputs:
+  - type: filestream
+    id: ms-project
+    enabled: true
+    paths:
+      - /logs/*.log
+    parsers:
+      - ndjson:
+          target: ""
+          overwrite_keys: true
+          add_error_key: true
+          expand_keys: true
+output.elasticsearch:
+  hosts:
+    - "${ELASTICSEARCH_ENDPOINT:http://localhost:9200}"
