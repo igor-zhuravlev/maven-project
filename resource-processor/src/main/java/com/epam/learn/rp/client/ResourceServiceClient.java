@@ -16,7 +16,7 @@ import java.nio.charset.StandardCharsets;
 @RequiredArgsConstructor
 public class ResourceServiceClient {
 
-    private final RestClient gatewayClient;
+    private final RestClient resourceClient;
 
     @Retryable(
         retryFor = {ResourceAccessException.class, ResourceServiceClientException.class},
@@ -28,8 +28,8 @@ public class ResourceServiceClient {
         )
     )
     public byte[] downloadResource(final Integer id) {
-        return gatewayClient.get()
-            .uri("/resource-service/resources/{id}", id)
+        return resourceClient.get()
+            .uri("/resources/{id}", id)
             .accept(MediaType.valueOf("audio/mpeg"))
             .retrieve()
             .onStatus(HttpStatusCode::is5xxServerError, (request, response) -> {

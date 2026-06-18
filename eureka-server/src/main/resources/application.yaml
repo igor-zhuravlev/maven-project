@@ -1,18 +1,5 @@
 spring:
   application:
     name: eureka-server
-server:
-  port: 8761
-eureka:
-  client:
-    register-with-eureka: false
-    fetch-registry: false
-management:
-  endpoint:
-    health:
-      probes:
-        enabled: true
-logging:
-  level:
-    com.epam.learn.es: info
-    org.springframework: info
+  config:
+    import: configserver:${CONFIG_SERVER_URL:http://localhost:8888}
