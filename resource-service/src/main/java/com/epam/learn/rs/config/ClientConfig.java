@@ -12,6 +12,9 @@ public class ClientConfig {
     @Value("${app.services.song-service-url}")
     private String songServerUrl;
 
+    @Value("${app.services.storage-service-url}")
+    private String storageServerUrl;
+
     @LoadBalanced
     @Bean
     public RestClient.Builder restClientBuilder() {
@@ -22,6 +25,13 @@ public class ClientConfig {
     public RestClient songClient(RestClient.Builder restClientBuilder) {
         return restClientBuilder
             .baseUrl(songServerUrl)
+            .build();
+    }
+
+    @Bean
+    public RestClient storageClient(RestClient.Builder restClientBuilder) {
+        return restClientBuilder
+            .baseUrl(storageServerUrl)
             .build();
     }
 

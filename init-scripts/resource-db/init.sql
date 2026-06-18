@@ -1,4 +1,6 @@
 CREATE TABLE IF NOT EXISTS resource (
     id SERIAL PRIMARY KEY,
+    storage_type VARCHAR NOT NULL,
+    bucket VARCHAR NOT NULL,
     s3_key VARCHAR NOT NULL UNIQUE
 );
