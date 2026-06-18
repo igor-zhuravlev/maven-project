@@ -1,5 +1,32 @@
 spring:
   application:
     name: resource-processor
+  rabbitmq:
+    host: "${RABBITMQ_HOSTNAME:localhost}"
+    port: 5672
+  cloud:
+    function:
+      definition: resourceUploadedConsumer
+    stream:
+      bindings:
+        resourceUploadedConsumer-in-0:
+          destination: resources.exchange
+          group: resources.resource.uploaded.queue
+      rabbit:
+        bindings:
+          resourceUploadedConsumer-in-0:
+            consumer:
+              bindingRoutingKey: resources.resource.uploaded
+              queueNameGroupOnly: true
+app:
+  retry:
+    max-attempts: 5
+    initial-interval: 1000
+    multiplier: 2.0
+    max-interval: 10000
 server:
   port: 8084
+logging:
+  level:
+    com.epam.learn.rp: info
+    org.springframework: info
