@@ -35,6 +35,11 @@ management:
 logging:
   file:
     name: "${LOG_FILE:logs/config-server.log}"
+  level:
+    com.epam.learn.cs: info
+    org.springframework: info
+    com.netflix.eureka: off
+    com.netflix.discovery: off
   structured:
     format:
       file: ecs
