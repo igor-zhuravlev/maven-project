@@ -5,6 +5,7 @@ import com.epam.learn.rp.client.SongServiceClient;
 import com.epam.learn.rp.dto.MetadataDto;
 import com.epam.learn.rp.event.ResourceUploadedEvent;
 import com.epam.learn.rp.mapper.ResourceMetadataMapper;
+import com.epam.learn.rp.publisher.ResourceProcessedEventPublisher;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -29,6 +30,9 @@ class ResourceMetadataServiceImplTest {
     @Mock
     private ResourceMetadataMapper resourceMetadataMapper;
 
+    @Mock
+    private ResourceProcessedEventPublisher resourceProcessedEventPublisher;
+
     @InjectMocks
     private ResourceMetadataServiceImpl resourceMetadataService;
 
@@ -47,6 +51,7 @@ class ResourceMetadataServiceImplTest {
         verify(resourceServiceClient, only()).downloadResource(1);
         verify(resourceMetadataMapper, only()).mapToMetadataDto(1, data);
         verify(songServiceClient, only()).createSong(metadataDto);
+        verify(resourceProcessedEventPublisher, only()).publish(1);
     }
 
 }

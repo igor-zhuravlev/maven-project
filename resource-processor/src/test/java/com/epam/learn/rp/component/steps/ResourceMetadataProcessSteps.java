@@ -5,6 +5,7 @@ import com.epam.learn.rp.client.SongServiceClient;
 import com.epam.learn.rp.dto.MetadataDto;
 import com.epam.learn.rp.event.ResourceUploadedEvent;
 import com.epam.learn.rp.mapper.ResourceMetadataMapper;
+import com.epam.learn.rp.publisher.ResourceProcessedEventPublisher;
 import com.epam.learn.rp.service.ResourceMetadataService;
 import com.epam.learn.rp.service.impl.ResourceMetadataServiceImpl;
 import io.cucumber.java.en.Given;
@@ -37,6 +38,9 @@ public class ResourceMetadataProcessSteps {
 
     @MockitoBean
     private SongServiceClient songServiceClient;
+
+    @MockitoBean
+    private ResourceProcessedEventPublisher resourceProcessedEventPublisher;
 
     private byte[] mp3File;
 
@@ -74,6 +78,11 @@ public class ResourceMetadataProcessSteps {
         assertNotNull(metadataDto.album());
         assertNotNull(metadataDto.duration());
         assertNotNull(metadataDto.year());
+    }
+
+    @Then("resource processed event should be published for resource with id {int}")
+    public void resourceProcessedEventShouldBePublishedForResourceWithId(Integer id) {
+        verify(resourceProcessedEventPublisher).publish(id);
     }
 
 }

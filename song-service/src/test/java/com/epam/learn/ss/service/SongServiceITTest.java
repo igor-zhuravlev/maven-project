@@ -24,7 +24,13 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
+@SpringBootTest(
+    properties = {
+        "eureka.client.enabled=false",
+        "spring.cloud.discovery.enabled=false"
+    },
+    webEnvironment = SpringBootTest.WebEnvironment.NONE
+)
 @Testcontainers
 class SongServiceITTest {
 

@@ -316,6 +316,20 @@ services:
       - prometheus-data:/prometheus
     restart: unless-stopped
 
+  kibana:
+    image: docker.elastic.co/kibana/kibana:9.4.2
+    mem_limit: 1GB
+    ports:
+      - "5601:5601"
+    environment:
+      ELASTICSEARCH_HOSTS: ${ELASTICSEARCH_ENDPOINT}
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    depends_on:
+      elasticsearch:
+        condition: service_started
+    restart: unless-stopped
+
   grafana:
     image: grafana/grafana:13.0
     user: root
@@ -344,9 +358,11 @@ services:
     command: ["start-dev", "--import-realm"]
     ports:
       - "8088:8080"
+      - "9000:9000"
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_BOOTSTRAP_ADMIN_USERNAME}
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_BOOTSTRAP_ADMIN_PASSWORD}
+      KC_HEALTH_ENABLED: true
     volumes:
       - ./keycloak:/opt/keycloak/data/import:ro
     restart: unless-stopped

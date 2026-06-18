@@ -5,6 +5,7 @@ Scenario: Process uploaded resource and create song metadata
   When resource uploaded event with id <id> is received
   Then resource processor should request resource with id <id> from resource service
   And song metadata should be created in song service
+  And resource processed event should be published for resource with id <id>
 
   Examples:
   | id |

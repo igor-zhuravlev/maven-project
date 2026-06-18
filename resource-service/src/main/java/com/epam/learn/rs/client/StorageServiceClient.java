@@ -6,6 +6,7 @@ import com.epam.learn.rs.exception.StorageNotFoundException;
 import com.epam.learn.rs.exception.StorageServiceException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
@@ -15,6 +16,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Component
+@Slf4j
 @RequiredArgsConstructor
 public class StorageServiceClient {
 
@@ -53,6 +55,11 @@ public class StorageServiceClient {
     }
 
     private StorageDto getStorageFallback(final StorageType storageType, final Throwable throwable) {
+        log.info(
+            "Storage Service is unavailable or returned an error. Using fallback storage config :: storageType: {}, reason: {}",
+            storageType,
+            throwable.toString()
+        );
         return FALLBACK_STORAGES.stream()
             .filter(storage -> storage.storageType() == storageType)
             .findFirst()

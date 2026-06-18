@@ -1,7 +1,7 @@
 package com.epam.learn.rp.contract;
 
 import com.epam.learn.rp.client.SongServiceClient;
-import com.epam.learn.rp.config.GatewayClientConfig;
+import com.epam.learn.rp.config.ClientConfig;
 import com.epam.learn.rp.dto.MetadataDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,11 +13,15 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 @SpringBootTest(
     classes = {
-        GatewayClientConfig.class,
+        ClientConfig.class,
         SongServiceClient.class
     },
     properties = {
-        "GATEWAY_SERVER_URL=http://localhost:${stubrunner.runningstubs.song-service.port}",
+        "app.services.song-service-url=http://localhost:${stubrunner.runningstubs.song-service.port}",
+        "app.retry.max-attempts=5",
+        "app.retry.initial-interval=1000",
+        "app.retry.multiplier=2.0",
+        "app.retry.max-interval=10000"
     },
     webEnvironment = SpringBootTest.WebEnvironment.NONE
 )

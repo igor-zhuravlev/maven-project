@@ -17,8 +17,9 @@ public class ResourceUploadedEventConsumer implements Consumer<ResourceUploadedE
 
     @Override
     public void accept(final ResourceUploadedEvent event) {
-        log.info("Received event: {}", event);
+        log.info("Received resource uploaded event: resourceId={}", event.resourceId());
         resourceMetadataService.handle(event);
+        log.info("Resource uploaded event processed: resourceId={}", event.resourceId());
     }
 
 }
