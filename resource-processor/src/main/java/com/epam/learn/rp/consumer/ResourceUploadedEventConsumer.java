@@ -11,7 +11,7 @@ import java.util.function.Consumer;
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class ResourceUploadedConsumer implements Consumer<ResourceUploadedEvent> {
+public class ResourceUploadedEventConsumer implements Consumer<ResourceUploadedEvent> {
 
     private final ResourceMetadataService resourceMetadataService;
 

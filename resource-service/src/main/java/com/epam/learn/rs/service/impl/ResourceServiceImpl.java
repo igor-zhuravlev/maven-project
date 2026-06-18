@@ -1,24 +1,19 @@
 package com.epam.learn.rs.service.impl;
 
-import com.epam.learn.rs.config.RabbitConfig;
+import com.epam.learn.rs.client.SongServiceClient;
 import com.epam.learn.rs.dto.DeleteResourceRequestDto;
 import com.epam.learn.rs.dto.ResourceResponseDto;
 import com.epam.learn.rs.entity.Resource;
-import com.epam.learn.rs.event.ResourceUploadedEvent;
 import com.epam.learn.rs.exception.InvalidResourceIdException;
 import com.epam.learn.rs.exception.ResourceNotFoundException;
-import com.epam.learn.rs.exception.SongServiceException;
+import com.epam.learn.rs.publisher.ResourceEventPublisher;
 import com.epam.learn.rs.repository.ResourceRepository;
 import com.epam.learn.rs.service.ResourceS3Service;
 import com.epam.learn.rs.service.ResourceService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestClient;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -30,8 +25,8 @@ public class ResourceServiceImpl implements ResourceService {
 
     private final ResourceS3Service resourceS3Service;
     private final ResourceRepository resourceRepository;
-    private final RabbitTemplate rabbitTemplate;
-    private final RestClient gatewayClient;
+    private final ResourceEventPublisher resourceEventPublisher;
+    private final SongServiceClient songServiceClient;
 
     @Transactional
     @Override
@@ -39,11 +34,7 @@ public class ResourceServiceImpl implements ResourceService {
         String key = resourceS3Service.upload(data);
         Resource resource = new Resource(null, key);
         Resource saved = resourceRepository.save(resource);
-        rabbitTemplate.convertAndSend(
-            RabbitConfig.RESOURCES_EXCHANGE,
-            RabbitConfig.RESOURCE_UPLOADED_ROUTING_KEY,
-            new ResourceUploadedEvent(saved.getId())
-        );
+        resourceEventPublisher.publishResourceUploaded(saved.getId());
         return new ResourceResponseDto(saved.getId());
     }
 
@@ -66,17 +57,7 @@ public class ResourceServiceImpl implements ResourceService {
             .collect(Collectors.toSet());
         List<Resource> existingResources = resourceRepository.findAllById(ids);
 
-        gatewayClient.delete()
-            .uri(uriBuilder -> uriBuilder
-                .path("/song-service/songs")
-                .queryParam("id", dto.id())
-                .build())
-            .retrieve()
-            .onStatus(HttpStatusCode::isError, (request, response) -> {
-                throw new SongServiceException(new String(response.getBody().readAllBytes(), StandardCharsets.UTF_8));
-            })
-            .toBodilessEntity();
-
+        songServiceClient.deleteSongsByIds(dto.id());
         resourceS3Service.delete(existingResources);
 
         List<Integer> existingIds = existingResources.stream()

@@ -6,15 +6,15 @@ spring:
     port: 5672
   cloud:
     function:
-      definition: resourceUploadedConsumer
+      definition: resourceUploadedEventConsumer
     stream:
       bindings:
-        resourceUploadedConsumer-in-0:
+        resourceUploadedEventConsumer-in-0:
           destination: resources.exchange
           group: resources.resource.uploaded.queue
       rabbit:
         bindings:
-          resourceUploadedConsumer-in-0:
+          resourceUploadedEventConsumer-in-0:
             consumer:
               bindingRoutingKey: resources.resource.uploaded
               queueNameGroupOnly: true

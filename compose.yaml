@@ -106,6 +106,7 @@ services:
       SERVICES: s3
     volumes:
       - ./init-scripts/localstack:/etc/localstack/init/ready.d
+    restart: unless-stopped
 
   resource-processor:
     build: ./resource-processor
@@ -127,6 +128,6 @@ services:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 5s
       timeout: 2s
-      retries: 10
-      start_period: 5s
+      retries: 15
+      start_period: 10s
     restart: unless-stopped
